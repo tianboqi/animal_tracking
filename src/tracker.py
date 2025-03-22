@@ -28,16 +28,16 @@ class AnimalTracker:
             binary_masks[:,:,:] = (torch.nn.functional.conv2d(binary_masks, self.kernel, padding=2) > 1).float()  # dilation
             binary_masks[:,:,:] = (torch.nn.functional.conv_transpose2d(binary_masks, self.kernel, padding=2) > 0.8).float()  # erosion
         
-        if self.binary_masks_tail is None:
-            self.binary_masks_tail = torch.cat([torch.zeros_like(binary_masks[0]), torch.zeros_like(binary_masks[0])]).unsqueeze(1)
-        binary_masks = torch.cat((self.binary_masks_tail, binary_masks), dim=0)
-
-        self.binary_masks_tail = binary_masks[-2:]
-
-        # Median Filter across frames (Temporal Smoothing)
-        binary_masks = torch.median(torch.cat([binary_masks[:-2].unsqueeze(0), 
-                                               binary_masks[1:-1].unsqueeze(0), 
-                                               binary_masks[2:].unsqueeze(0)]), dim=0).values  # Shape: (BATCH_SIZE, 1, H, W)
+            if self.binary_masks_tail is None:
+                self.binary_masks_tail = torch.cat([torch.zeros_like(binary_masks[0]), torch.zeros_like(binary_masks[0])]).unsqueeze(1)
+            binary_masks = torch.cat((self.binary_masks_tail, binary_masks), dim=0)
+    
+            self.binary_masks_tail = binary_masks[-2:]
+    
+            # Median Filter across frames (Temporal Smoothing)
+            binary_masks = torch.median(torch.cat([binary_masks[:-2].unsqueeze(0), 
+                                                   binary_masks[1:-1].unsqueeze(0), 
+                                                   binary_masks[2:].unsqueeze(0)]), dim=0).values  # Shape: (BATCH_SIZE, 1, H, W)
 
         # Calculate center of mass
         return self.compute_center_of_mass(binary_masks)
