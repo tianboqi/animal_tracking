@@ -1,6 +1,7 @@
 # Animal Tracking using GPU
 
-This project provides a PyTorch-based pipeline for tracking animal movements in an arena using GPU acceleration. It applies background subtraction, morphological operations, and center of mass detection to identify and analyze the animal's trajectory.
+This project provides a PyTorch-based pipeline for tracking animal movements in an arena using GPU acceleration. 
+Designed to handle long video recordings, it provides robust performance for large-scale behavioral analysis.
 
 ## Features
 - GPU-accelerated video processing using PyTorch.
