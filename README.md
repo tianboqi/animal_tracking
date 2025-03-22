@@ -23,13 +23,13 @@ pip install -r requirements.txt
 ```bash
 python src/main.py --video video/example.mp4 --batch 2000 --output results.csv
 ```
-3. Adjust the parameters in `src/main.py` and `src/tracker.py`if needed.
+3. Adjust the parameters in `src/main.py` and `src/tracker.py` if needed.
 
 ## Parameters
 - `--video`: Path to the input video.
-- `--batch`: Batch size for parallel processing.
+- `--batch`: Batch size for parallel processing. This should be determined by your GPU memory.
 - `--output`: Path to save the output CSV with center of mass data.
-- `--generate_video`: Whether you want to generate videos with overlaid center-of-mass (batch by batch)
+- `--generate_video`: Whether you want to generate videos with overlaid center-of-mass (batch by batch).
 
 ## Results
 Output CSV includes the following columns:
