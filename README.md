@@ -32,7 +32,7 @@ python src/main.py --video video/example.mp4 --batch 2000 --output results.csv
 - `--output`: Path to save the output CSV with center of mass data.
 - `--generate_video`: Whether you want to generate videos with overlaid center-of-mass (batch by batch).
 
-## Results
+## Output
 The output CSV includes the following columns:
 - `frame_number`: Frame index.
 - `x_com`: X-coordinate of the center of mass.
