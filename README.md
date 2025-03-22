@@ -5,6 +5,7 @@ This project provides a PyTorch-based pipeline for tracking animal movements in 
 ## Features
 - GPU-accelerated video processing using PyTorch.
 - Especially optimized for low-contrast videos.
+- Faster than [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut) or [SLEEP](https://sleap.ai/) and no training needed if you <ins>only</ins> need center of mass.
   
 ## Installation
 ```bash
