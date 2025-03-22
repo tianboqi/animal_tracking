@@ -37,6 +37,7 @@ The output CSV includes the following columns:
 - `frame_number`: Frame index.
 - `x_com`: X-coordinate of the center of mass.
 - `y_com`: Y-coordinate of the center of mass.
+
 With `--generate_video`, there will be videos generated with the tracked center of mass (a red dot) for each batch of frame processed.
 
 ## Contact
