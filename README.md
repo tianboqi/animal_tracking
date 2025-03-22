@@ -33,10 +33,11 @@ python src/main.py --video video/example.mp4 --batch 2000 --output results.csv
 - `--generate_video`: Whether you want to generate videos with overlaid center-of-mass (batch by batch).
 
 ## Results
-Output CSV includes the following columns:
+The output CSV includes the following columns:
 - `frame_number`: Frame index.
 - `x_com`: X-coordinate of the center of mass.
 - `y_com`: Y-coordinate of the center of mass.
+With `--generate_video`, there will be videos generated with the tracked center of mass (a red dot) for each batch of frame processed.
 
 ## Contact
 For questions or contributions, feel free to open an issue or submit a pull request.
