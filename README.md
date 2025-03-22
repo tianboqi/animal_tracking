@@ -20,11 +20,11 @@ pip install -r requirements.txt
 
 ## Usage
 1. Place your video file in the `video/` folder.
-2. Run the pipeline:
+2. Adjust the parameters in `src/main.py` and `src/tracker.py` if needed.
+3. Run the pipeline:
 ```bash
 python src/main.py --video video/example.mp4 --batch 2000 --output results.csv
 ```
-3. Adjust the parameters in `src/main.py` and `src/tracker.py` if needed.
 
 ## Parameters
 - `--video`: Path to the input video.
