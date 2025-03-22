@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-1. Place your video file in the `data/` folder.
+1. Place your video file in the `video/` folder.
 2. Adjust the parameters in `src/main.py` if needed.
 3. Run the pipeline:
 ```bash
