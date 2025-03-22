@@ -60,7 +60,7 @@ def main():
         batch_idx += 1
 
         if args.generate_video:
-            generate_tracked_video(batch_frames, com, f"{args.video}_tracking_batch{batch_idx}.mp4", fps=fps)
+            generate_tracked_video(batch_frames, com, f"{args.video[:-4]}_tracking_batch{batch_idx}.mp4", fps=fps)
 
     cap.release()
     save_results(com_array, args.output)
