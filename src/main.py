@@ -57,11 +57,12 @@ def main():
         com_array = np.append(com_array, com, axis=0)
 
         print(f"Processed Frames: {batch_idx} * {args.batch}")
-        batch_idx += 1
 
         if args.generate_video:
             generate_tracked_video(batch_frames, com, f"{args.video[:-4]}_tracking_batch{batch_idx}.mp4", fps=fps)
-
+        
+        batch_idx += 1
+        
     cap.release()
     save_results(com_array, args.output)
     
