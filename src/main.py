@@ -52,6 +52,7 @@ def main():
         
         # Process frames
         com = tracker.process_frame(batch_frames).detach().cpu().numpy()
+        # tracker.display_binary_masks()
 
         # Accumulate the results in an np array
         com_array = np.append(com_array, com, axis=0)
