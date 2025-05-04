@@ -18,7 +18,7 @@ class AnimalTracker:
             batch_tensor = torch.from_numpy(np.stack(batch_frames, axis=0)).to(self.device, dtype=torch.float32).mean(axis=3, keepdim=True).permute(0,3,1,2) / 255.0
 
             # Compute median frame (adaptive background)
-            bg_frame = torch.mode(batch_tensor, dim=0).values
+            bg_frame = torch.median(batch_tensor, dim=0).values
             std_frame = torch.std(batch_tensor, dim=0)
 
             # Background subtraction and thresholding
