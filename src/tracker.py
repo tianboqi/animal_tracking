@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import cv2
 
 class AnimalTracker:
 
@@ -30,7 +31,7 @@ class AnimalTracker:
             std_frame = torch.std(self.frame_buffer, dim=0)
 
             # Background subtraction and thresholding
-            self.binary_masks = torch.abs(batch_tensor - bg_frame)
+            self.binary_masks = torch.abs(batch_tensor - median_frame)
             self.binary_masks.masked_fill_(self.binary_masks <= (3 * std_frame), 0.0)
         
             # Apply morphological operations (erosion + dilation)
@@ -39,21 +40,21 @@ class AnimalTracker:
         
             # Initialize binary_masks_tail if needed
             if self.binary_masks_tail is None:
-                self.binary_masks_tail = torch.zeros_like(binary_masks[0]).unsqueeze(0)
+                self.binary_masks_tail = torch.zeros_like(self.binary_masks[0]).unsqueeze(0)
             
             # Combine with previous masks for temporal smoothing
             if self.processed_frames > 0:
-                binary_masks = torch.cat([self.binary_masks_tail, binary_masks], dim=0)
+                self.binary_masks = torch.cat([self.binary_masks_tail, self.binary_masks], dim=0)
             
             # Update binary_masks_tail for next iteration
-            self.binary_masks_tail = binary_masks[-1:].clone()
+            self.binary_masks_tail = self.binary_masks[-1:].clone()
             
             # Apply temporal smoothing only if we have enough frames
             if self.processed_frames > 0:
-                binary_masks = torch.median(torch.stack([
-                    binary_masks[:-2],
-                    binary_masks[1:-1],
-                    binary_masks[2:]
+                self.binary_masks = torch.median(torch.stack([
+                    self.binary_masks[:-2],
+                    self.binary_masks[1:-1],
+                    self.binary_masks[2:]
                 ]), dim=0).values
             
             self.processed_frames += len(batch_frames)
