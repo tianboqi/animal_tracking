@@ -10,6 +10,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--video', type=str, required=True, help='Path to the video file')
     parser.add_argument('--batch', type=int, required=True, help='Number of frames to be processed in parallel')
+    parser.add_argument('--overlap', type=int, default=2, help='Number of frames to overlap between batches')
     parser.add_argument('--output', type=str, required=True, help='Path to save the output CSV')
     parser.add_argument('--generate_video', action='store_true', help='Generate a tracked video (batch by batch)')
     args = parser.parse_args()
@@ -31,13 +32,14 @@ def main():
         return
     fps = cap.get(cv2.CAP_PROP_FPS)
 
-    tracker = AnimalTracker(device=device, batch_size=args.batch)
+    tracker = AnimalTracker(device=device, batch_size=args.batch, overlap=args.overlap)
     com_array = np.empty((0,2))
 
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(f"Total Frames: {frame_count}")
 
     batch_idx = 1
+    processed_frames = 0
 
     while True:
         # Read a batch of frames
@@ -56,8 +58,9 @@ def main():
 
         # Accumulate the results in an np array
         com_array = np.append(com_array, com, axis=0)
+        processed_frames += len(batch_frames)
 
-        print(f"Processed Frames: {batch_idx} * {args.batch}")
+        print(f"Processed Frames: {processed_frames}/{frame_count} (Batch {batch_idx})")
 
         if args.generate_video:
             generate_tracked_video(batch_frames, com, f"{args.video[:-4]}_tracking_batch{batch_idx}.mp4", fps=fps)

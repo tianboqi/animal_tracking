@@ -3,23 +3,31 @@ import numpy as np
 
 class AnimalTracker:
 
-    def __init__(self, device='cuda', batch_size=1000):
+    def __init__(self, device='cuda', batch_size=1000, overlap=2):
         self.device = torch.device(device)
         self.batch_size = batch_size
+        self.overlap = overlap
         self.kernel = torch.ones((1, 1, 5, 5), device=self.device)
         self.binary_masks = None
         self.binary_masks_tail = None
+        self.frame_buffer = None
+        self.processed_frames = 0
 
     def process_frame(self, batch_frames):
-
+        # Convert the frames to a tensor
+        batch_tensor = torch.from_numpy(np.stack(batch_frames, axis=0)).to(self.device, dtype=torch.float32).mean(axis=3, keepdim=True).permute(0,3,1,2) / 255.0
+        
         with torch.amp.autocast('cuda'):      # Mixed precision
-
-            # Convert the frames to a tensor
-            batch_tensor = torch.from_numpy(np.stack(batch_frames, axis=0)).to(self.device, dtype=torch.float32).mean(axis=3, keepdim=True).permute(0,3,1,2) / 255.0
-
+            # Initialize or update frame buffer
+            if self.frame_buffer is None:
+                self.frame_buffer = batch_tensor
+            else:
+                # Keep only the overlap frames from previous batch
+                self.frame_buffer = torch.cat([self.frame_buffer[-self.overlap:], batch_tensor], dim=0)
+            
             # Compute median frame (adaptive background)
-            bg_frame = torch.median(batch_tensor, dim=0).values
-            std_frame = torch.std(batch_tensor, dim=0)
+            median_frame = torch.median(self.frame_buffer, dim=0).values
+            std_frame = torch.std(self.frame_buffer, dim=0)
 
             # Background subtraction and thresholding
             self.binary_masks = torch.abs(batch_tensor - bg_frame)
@@ -29,16 +37,26 @@ class AnimalTracker:
             self.binary_masks[:,:,:] = (torch.nn.functional.conv2d(self.binary_masks, self.kernel, padding=2) > 1).float()  # dilation
             self.binary_masks[:,:,:] = (torch.nn.functional.conv_transpose2d(self.binary_masks, self.kernel, padding=2) > 0.8).float()  # erosion
         
+            # Initialize binary_masks_tail if needed
             if self.binary_masks_tail is None:
-                self.binary_masks_tail = torch.cat([torch.zeros_like(self.binary_masks[0]), torch.zeros_like(self.binary_masks[0])]).unsqueeze(1)
-            self.binary_masks = torch.cat((self.binary_masks_tail, self.binary_masks), dim=0)
-    
-            self.binary_masks_tail = binary_masks[-2:]
-    
-            # Median Filter across frames (Temporal Smoothing)
-            self.binary_masks = torch.median(torch.cat([self.binary_masks[:-2].unsqueeze(0), 
-                                                   self.binary_masks[1:-1].unsqueeze(0), 
-                                                   self.binary_masks[2:].unsqueeze(0)]), dim=0).values  # Shape: (BATCH_SIZE, 1, H, W)
+                self.binary_masks_tail = torch.zeros_like(binary_masks[0]).unsqueeze(0)
+            
+            # Combine with previous masks for temporal smoothing
+            if self.processed_frames > 0:
+                binary_masks = torch.cat([self.binary_masks_tail, binary_masks], dim=0)
+            
+            # Update binary_masks_tail for next iteration
+            self.binary_masks_tail = binary_masks[-1:].clone()
+            
+            # Apply temporal smoothing only if we have enough frames
+            if self.processed_frames > 0:
+                binary_masks = torch.median(torch.stack([
+                    binary_masks[:-2],
+                    binary_masks[1:-1],
+                    binary_masks[2:]
+                ]), dim=0).values
+            
+            self.processed_frames += len(batch_frames)
 
         # Calculate center of mass
         return self.compute_center_of_mass(self.binary_masks)
