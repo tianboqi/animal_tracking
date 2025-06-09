@@ -29,7 +29,6 @@ python src/main.py --video video/example.mp4 --batch 2000 --output results.csv
 ## Parameters
 - `--video`: Path to the input video.
 - `--batch`: Batch size for parallel processing. This should be determined by your GPU memory.
-- `--overlap` (optional): Number of frames to overlap between batches (default: 2). Higher values provide smoother tracking but use more memory.
 - `--output`: Path to save the output CSV with center of mass data.
 - `--generate_video` (optional): Whether you want to generate videos with overlaid center-of-mass (batch by batch).
 

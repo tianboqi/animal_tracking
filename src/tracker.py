@@ -10,7 +10,6 @@ class AnimalTracker:
         self.overlap = overlap
         self.kernel = torch.ones((1, 1, 5, 5), device=self.device)
         self.binary_masks = None
-        self.binary_masks_tail = None
         self.frame_buffer = None
         self.processed_frames = 0
 
@@ -37,26 +36,20 @@ class AnimalTracker:
             # Apply morphological operations (erosion + dilation)
             self.binary_masks[:,:,:] = (torch.nn.functional.conv2d(self.binary_masks, self.kernel, padding=2) > 1).float()  # dilation
             self.binary_masks[:,:,:] = (torch.nn.functional.conv_transpose2d(self.binary_masks, self.kernel, padding=2) > 0.8).float()  # erosion
-        
-            # Initialize binary_masks_tail if needed
-            if self.binary_masks_tail is None:
-                self.binary_masks_tail = torch.zeros_like(self.binary_masks[0]).unsqueeze(0)
             
-            # Combine with previous masks for temporal smoothing
-            if self.processed_frames > 0:
-                self.binary_masks = torch.cat([self.binary_masks_tail, self.binary_masks], dim=0)
+            # Padding only for the first batch since we don't have previous frames
+            if not self.processed_frames:
+                mask_padding = torch.cat([torch.zeros_like(self.binary_masks[0])] * self.overlap).unsqueeze(1)
+                self.binary_masks = torch.cat([mask_padding, self.binary_masks], dim=0)
+
+            # Apply temporal smoothing
+            self.binary_masks = torch.median(torch.stack([
+                self.binary_masks[:-2],
+                self.binary_masks[1:-1],
+                self.binary_masks[2:]
+            ]), dim=0).values
             
-            # Update binary_masks_tail for next iteration
-            self.binary_masks_tail = self.binary_masks[-1:].clone()
-            
-            # Apply temporal smoothing only if we have enough frames
-            if self.processed_frames > 0:
-                self.binary_masks = torch.median(torch.stack([
-                    self.binary_masks[:-2],
-                    self.binary_masks[1:-1],
-                    self.binary_masks[2:]
-                ]), dim=0).values
-            
+            # Update the number of processed frames
             self.processed_frames += len(batch_frames)
 
         # Calculate center of mass
