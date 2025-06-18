@@ -87,4 +87,4 @@ class AnimalTracker:
         y_com[mask_sum.squeeze(1) == 0] = torch.nan
         x_com[mask_sum.squeeze(1) == 0] = torch.nan
 
-        return torch.stack([y_com, x_com], dim=1).squeeze()  # Shape: (batch, 2)
+        return torch.cat([y_com, x_com], dim=1)        # Shape: (batch, 2)
